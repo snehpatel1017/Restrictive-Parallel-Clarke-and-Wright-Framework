@@ -889,8 +889,7 @@ postProcessIt(const VRP &vrp, std::vector<std::vector<node_t>> &final_routes, we
     auto postprocessed_final_routes2 = postprocess_2OPT(vrp, postprocessed_final_routes1);
     auto postprocessed_final_routes3 = postprocess_2OPT(vrp, final_routes);
 
-//~ weight_t postprocessed_final_routes_cost;
-#pragma omp parallel for
+    //~ weight_t postprocessed_final_routes_cost;
     for (unsigned zzz = 0; zzz < final_routes.size(); ++zzz)
     {
         // include the better route between postprocessed_final_routes2[zzz] and postprocessed_final_routes3[zzz] in the final solution.
