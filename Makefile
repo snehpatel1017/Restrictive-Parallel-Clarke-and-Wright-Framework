@@ -1,47 +1,35 @@
 # ==========================================
-# Makefile for RPCW CVRP Solver
+# Makefile for CVRP Solvers (RCPW & CCW)
 # ==========================================
 
 # Compilers
 NVCC := nvcc
 CXX  := g++
 
-# Target Executable Name
-TARGET := rpcw_solver
-
-# GPU Architecture (sm_80 is for NVIDIA A100. Change to sm_75 for Turing or sm_86 for Ampere/RTX 30-series)
-ARCH := sm_80
+# Target Executables
+TARGET_RCPW := rpcw_solver
+TARGET_CCW  := CCW.out
 
 # Compiler Flags
-NVCC_FLAGS := -O3 -arch=$(ARCH) -std=c++17
-CXX_FLAGS  := -O3 -Wall -Wextra -std=c++17
+NVCC_FLAGS := -arch=sm_80 -O3
+CXX_FLAGS  := -O3
 
-# Source Files
-CUDA_SRC := RCPW.cu
-CPP_SRC  := CCW.cpp KDTree.cpp
+# Default rule: build both solvers
+all: $(TARGET_RCPW) $(TARGET_CCW)
 
-# Object Files
-CUDA_OBJ := $(CUDA_SRC:.cu=.o)
-CPP_OBJ  := $(CPP_SRC:.cpp=.o)
-OBJS     := $(CUDA_OBJ) $(CPP_OBJ)
+RPCW: $(TARGET_RCPW)
+CCW: $(TARGET_CCW)
 
-# Default rule
-all: $(TARGET)
+# Build the GPU-accelerated RCPW solver
+$(TARGET_RCPW): RCPW.cu KDTree.cpp
+	$(NVCC) $(NVCC_FLAGS) RCPW.cu KDTree.cpp -o $@
 
-# Linking
-$(TARGET): $(OBJS)
-	$(NVCC) $(NVCC_FLAGS) -o $@ $^
-
-# Compiling CUDA source
-%.o: %.cu
-	$(NVCC) $(NVCC_FLAGS) -c $< -o $@
-
-# Compiling C++ source
-%.o: %.cpp
-	$(CXX) $(CXX_FLAGS) -c $< -o $@
+# Build the CPU baseline CCW solver
+$(TARGET_CCW): CCW.cpp
+	$(CXX) $(CXX_FLAGS) CCW.cpp -o $@
 
 # Clean up build artifacts
 clean:
-	rm -f $(OBJS) $(TARGET)
+	rm -f $(TARGET_RCPW) $(TARGET_CCW)
 
 .PHONY: all clean
